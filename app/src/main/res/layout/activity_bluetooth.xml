@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="100"
+    tools:context=".BluetoothActivity">
+    <ListView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="25"
+        android:scrollbars="vertical"
+        android:scrollbarFadeDuration="2000">
+    </ListView>
+
+<TextView
+    android:id="@+id/receive"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="0"
+    android:scrollbars="vertical"
+    android:scrollbarStyle="insideOverlay"
+    android:padding="10dp"
+    android:fadeScrollbars="false"
+    android:scrollbarFadeDuration="2000"
+    android:hint="原始数据展示"
+    android:visibility="gone"/>
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="30">
+    <com.rowsen.serial_bluetoothusb.AutoScrollTextView
+        android:id="@+id/scroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+
+        android:text="原始数据展示"
+        android:visibility="visible"/>
+</LinearLayout>
+<Button
+    android:id="@+id/stop"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="15"
+    android:text="断开连接"
+    android:enabled="false"/>
+    <Button
+        android:id="@+id/analysis"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="15"
+        android:text="数据解析"
+        android:enabled="false"/>
+        <Button
+            android:id="@+id/send"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="15"
+            android:text="数据模拟"
+            android:enabled="false"/>
+</LinearLayout>

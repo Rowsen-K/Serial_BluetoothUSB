@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AnalysisActivity"
+    android:orientation="vertical"
+    android:weightSum="100">
+<Button
+    android:id="@+id/gga"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="15"
+    android:text="解析GGA"/>
+    <TextView
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="30"
+        android:text="解析结果"/>
+</LinearLayout>

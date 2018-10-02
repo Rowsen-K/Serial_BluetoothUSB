@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="100">
+<Button
+    android:id="@+id/GPS"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="15"
+    android:text="模拟GPS"/>
+    <Button
+        android:id="@+id/Edit"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="15"
+        android:text="自编辑数据"/>
+    <EditText
+        android:id="@+id/data"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="30"
+        android:hint="请输入模拟数据!"
+        android:visibility="gone"/>
+    <Button
+        android:id="@+id/send"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="15"
+        android:text="发送"/>
+</LinearLayout>
