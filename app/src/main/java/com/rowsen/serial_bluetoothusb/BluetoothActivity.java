@@ -55,7 +55,7 @@ public class BluetoothActivity extends AppCompatActivity {
         analysis.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                connect.readflag = false;
+               // connect.readflag = false;
                 startActivity(new Intent(BluetoothActivity.this,AnalysisActivity.class));
             }
         });
@@ -78,14 +78,19 @@ public class BluetoothActivity extends AppCompatActivity {
                         synchronized (this) {
                             //添加完文本后需要滚动TextView到最后一行
                             int height = receive.getLineCount() * receive.getLineHeight();
-                            int scale = receive.getHeight() - receive.getLineHeight() - 20;
+                            int scale = receive.getHeight() - receive.getLineHeight() - 15;
                             if (height > scale)
                                 receive.scrollTo(0, height - scale);
                             //receive.clearComposingText();
                             receive.append(receive.autoSplitText(receive,(String) msg.obj));
                         }
-
                         // scroll.appendText((String)msg.obj);
+                        break;
+                    case 2://读取时蓝牙连接断开
+                        TextView state = (TextView)msg.obj;
+                        MyApp.completeFlag = false;
+                        state.setText("已配对|" + "蓝牙已断开!");
+                        state.setTextColor(getBaseContext().getResources().getColor(R.color.colorAccent));
                         break;
                     case 3://连接成功
                         stop.setEnabled(true);
@@ -122,9 +127,12 @@ public class BluetoothActivity extends AppCompatActivity {
                             connect.read(handler);
                         } catch (IOException e) {
                             e.printStackTrace();
+                            if(connect.socket.isConnected())
                                 connect.close();
-                                state.setText("已配对|" + "蓝牙已断开!");
-                                state.setTextColor(getBaseContext().getResources().getColor(R.color.colorAccent));
+                                Message msg = new Message();
+                                msg.what = 2;
+                                msg.obj = state;
+                                handler.sendMessage(msg);
                         }
                     }
                 }.start();
@@ -138,7 +146,22 @@ public class BluetoothActivity extends AppCompatActivity {
         if (connect != null) connect.close();
     }
 
-    //TextView可能由于全半角字符的问题导致换行参差不齐,这里是全半角字符的转换函数
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(!MyApp.completeFlag){
+            stop.setEnabled(false);
+            analysis.setEnabled(false);
+            send.setEnabled(false);
+        }
+        else{
+            stop.setEnabled(true);
+            analysis.setEnabled(true);
+            send.setEnabled(true);
+        }
+    }
+
+    //半角转全角函数，TextView可能由于全半角字符的问题导致换行参差不齐,这里是全半角字符的转换函数
     public String transport(String inputStr) {
         char arr[] = inputStr.toCharArray();
         for (int i = 0; i < arr.length; i++) {

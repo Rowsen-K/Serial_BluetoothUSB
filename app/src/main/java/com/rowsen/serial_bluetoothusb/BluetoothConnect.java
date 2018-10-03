@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -37,7 +38,11 @@ public class BluetoothConnect extends Thread {
     public void close() {
         if (socket != null) {
             try {
-                socket.close();
+                if (socket.isConnected()) {
+                    readflag = false;
+                    socket.close();
+                    MyApp.completeFlag = false;
+                }
                 System.out.println("成功断开蓝牙连接!");
             } catch (IOException e) {
                 e.printStackTrace();
@@ -80,6 +85,7 @@ public class BluetoothConnect extends Thread {
             in = new BufferedInputStream(socket.getInputStream());
             out = new BufferedOutputStream(socket.getOutputStream());
             MyApp.completeFlag = true;
+            readflag = true;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -87,22 +93,22 @@ public class BluetoothConnect extends Thread {
 
     }
 
-   public void read(Handler handler) throws IOException {
-       byte[] buf = new byte[128];
-       int n = 0;
-       write = MyApp.out;
-       while (readflag) {
-               n = in.read(buf);
-               if (n != -1) {
-                   String s = new String(buf, 0, n);
-                   //System.out.println("接收到的字符:" + s);
-                   write.write(s.getBytes());
-                   write.flush();
-                   Message msg = new Message();
-                   msg.what = 1;
-                   msg.obj = s;
-                   handler.sendMessage(msg);
-               }
-       }
-   }
+    public void read(Handler handler) throws IOException {
+        byte[] buf = new byte[128];
+        int n = 0;
+        write = MyApp.out;
+        while (readflag) {
+            if (in != null) n = in.read(buf);
+            if (n != -1 && n != 0) {
+                String s = new String(buf, 0, n);
+                //System.out.println("接收到的字符:" + s);
+                write.write(s.getBytes());
+                write.flush();
+                Message msg = new Message();
+                msg.what = 1;
+                msg.obj = s;
+                handler.sendMessage(msg);
+            }
+        }
+    }
 }
