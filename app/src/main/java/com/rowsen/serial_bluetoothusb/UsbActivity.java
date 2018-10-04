@@ -1,14 +1,11 @@
 package com.rowsen.serial_bluetoothusb;
 
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -20,8 +17,6 @@ import com.hoho.android.usbserial.util.SerialInputOutputManager;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -47,7 +42,7 @@ public class UsbActivity extends AppCompatActivity {
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
                 sio.writeAsync("Hello!\n".getBytes());
-                sendEmptyMessageDelayed(0,3000 );
+                sendEmptyMessageDelayed(0, 3000);
             }
         };
 
@@ -71,13 +66,13 @@ public class UsbActivity extends AppCompatActivity {
 
                     @Override
                     public void onRunError(final Exception e) {
-                       runOnUiThread(new Runnable() {
-                           @Override
-                           public void run() {
-                               test.append("发生了读取异常!\n");
-                               test.append(e.getMessage());
-                           }
-                       });
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                test.append("发生了读取异常!\n");
+                                test.append(e.getMessage());
+                            }
+                        });
                     }
                 };
                 sio = new SerialInputOutputManager(port, lis);
@@ -102,8 +97,7 @@ public class UsbActivity extends AppCompatActivity {
         // Find all available drivers from attached devices.
         UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
         List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
-        if (availableDrivers.isEmpty())
-        {
+        if (availableDrivers.isEmpty()) {
             test.append("没有可用的串口设备!");
             return;
         }
@@ -111,8 +105,7 @@ public class UsbActivity extends AppCompatActivity {
         //这里的可用驱动集合包含了所有已带驱动所支持的usb串口,如果你的硬件只有一个usb口那么默认可以选一,否则应该查看清单匹配
         UsbSerialDriver driver = availableDrivers.get(0);
         connection = manager.openDevice(driver.getDevice());
-        if (connection == null)
-        {
+        if (connection == null) {
             // You probably need to call UsbManager.requestPermission(driver.getDevice(), ..)
             test.append("\n没有USB使用权限!!");
             return;
@@ -121,13 +114,11 @@ public class UsbActivity extends AppCompatActivity {
 // Read some data! Most have just one port (port 0).
         //这里应该要加入串口设置模式.借用蓝牙那边的界面和sharedPreferences数据
         port = driver.getPorts().get(0);
-        try
-        {
+        try {
             port.open(connection);
             port.setParameters(115200, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
             test.append("串口已打开!\n");
-        } catch (IOException e)
-        {
+        } catch (IOException e) {
             test.append("打开串口失败!请检查连接!\n");
             // Deal with error.
             try {
