@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -14,9 +16,12 @@ import android.widget.TextView;
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
+import com.hoho.android.usbserial.util.SerialInputOutputManager;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -25,10 +30,11 @@ public class UsbActivity extends AppCompatActivity {
     TextView test;
     Button r;
     Button w;
-    Thread read;
-    Thread write;
     UsbDeviceConnection connection;
-    UsbSerialPort sPort;
+    UsbSerialPort port;
+    SerialInputOutputManager sio;
+    Handler handler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,100 +42,99 @@ public class UsbActivity extends AppCompatActivity {
         test = findViewById(R.id.test);
         r = findViewById(R.id.read);
         w = findViewById(R.id.write);
-        r.setOnClickListener(new View.OnClickListener() {
+        handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                sio.writeAsync("Hello!\n".getBytes());
+                sendEmptyMessageDelayed(0,3000 );
+            }
+        };
+
+        r.setOnClickListener(new View.OnClickListener()
+
+        {
             @Override
             public void onClick(View view) {
-                read.start();
+                //   read.start();
+                SerialInputOutputManager.Listener lis = new SerialInputOutputManager.Listener() {
+                    @Override
+                    public void onNewData(final byte[] data) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                test.append(new String(data));
+                            }
+                        });
+
+                    }
+
+                    @Override
+                    public void onRunError(final Exception e) {
+                       runOnUiThread(new Runnable() {
+                           @Override
+                           public void run() {
+                               test.append("发生了读取异常!\n");
+                               test.append(e.getMessage());
+                           }
+                       });
+                    }
+                };
+                sio = new SerialInputOutputManager(port, lis);
+                test.append("数据读取已开启!\n");
+                new Thread(sio).start();
                 r.setEnabled(false);
             }
         });
-        w.setOnClickListener(new View.OnClickListener() {
+        w.setOnClickListener(new View.OnClickListener()
+
+        {
             @Override
             public void onClick(View view) {
-                write.start();
+                //   write.start();
+                handler.sendEmptyMessageDelayed(0, 3000);
+                test.append("数据写出已开启!\n");
                 w.setEnabled(false);
             }
         });
-        // 获取系统服务得到UsbManager实例
+
+
+        // Find all available drivers from attached devices.
         UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
-        //查找所有插入的设备
         List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
-        if (availableDrivers.isEmpty()) {
-            test.setText("没有可用的USB设备！！！");
-            System.out.println("====没有可用的USB设备！！！");
+        if (availableDrivers.isEmpty())
+        {
+            test.append("没有可用的串口设备!");
             return;
-        } else {
-            test.setText("可用的USB个数：" + availableDrivers.size() + "\n" + availableDrivers);
-            System.out.println("======可用的USB个数：" + availableDrivers.size());
-            System.out.println(availableDrivers);
         }
-        // 打开设备，建立通信连接
+        // Open a connection to the first available driver.
+        //这里的可用驱动集合包含了所有已带驱动所支持的usb串口,如果你的硬件只有一个usb口那么默认可以选一,否则应该查看清单匹配
         UsbSerialDriver driver = availableDrivers.get(0);
-        sPort = driver.getPorts().get(0);
-        manager.requestPermission(driver.getDevice(), PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0));
-       if(manager.hasPermission(driver.getDevice())){
-           //connection = manager.openDevice(driver.getDevice());
-           connection = manager.openDevice(sPort.getDriver().getDevice());
-           test.append("获取了USB权限！！！");
-       }
-        if (connection == null) {
+        connection = manager.openDevice(driver.getDevice());
+        if (connection == null)
+        {
             // You probably need to call UsbManager.requestPermission(driver.getDevice(), ..)
-            test.append("连接USB设备失败！\n");
+            test.append("\n没有USB使用权限!!");
             return;
         }
 
-        //打开端口，设置端口参数，读取数据
-       // final UsbSerialPort port = driver.getPorts().get(0);
-        try {
-            sPort.open(connection);
-            //四个参数分别是：波特率，数据位，停止位，校验位
-            sPort.setParameters(115200, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
-
-            final byte buffer[] = new byte[16];
-            read = new Thread() {
-                @Override
-                public void run() {
-                    super.run();
-                    int numBytesRead = 0;
-                    while (true) {
-                        try {
-                            numBytesRead = sPort.read(buffer, 1000);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        Log.d("====记录：", "Read " + numBytesRead + " bytes.");
-                        if (numBytesRead != -1)
-                            test.append("=============收到的字符：" + new String(buffer, 0, numBytesRead));
-                    }
-                }
-            };
-            write = new Thread() {
-                @Override
-                public void run() {
-                    super.run();
-                    while (true) {
-                        try {
-                            sPort.write("Hello Rowsen".getBytes(), 1000);
-                            sleep(5000);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            test.append("写出失败");
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            };
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
+// Read some data! Most have just one port (port 0).
+        //这里应该要加入串口设置模式.借用蓝牙那边的界面和sharedPreferences数据
+        port = driver.getPorts().get(0);
+        try
+        {
+            port.open(connection);
+            port.setParameters(115200, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
+            test.append("串口已打开!\n");
+        } catch (IOException e)
+        {
+            test.append("打开串口失败!请检查连接!\n");
+            // Deal with error.
             try {
-                sPort.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+                port.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
             }
         }
-
     }
 }
