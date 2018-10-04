@@ -21,13 +21,14 @@ import java.util.List;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class UsbActivity extends AppCompatActivity {
-    private static final String ACTION_USB_PERMISSION = "com.rowsen.serial_bluetoothusb.USB_PERMISSION";
+    private static final String ACTION_USB_PERMISSION = "com.an.USB_PERMISSION";
     TextView test;
     Button r;
     Button w;
     Thread read;
     Thread write;
     UsbDeviceConnection connection;
+    UsbSerialPort sPort;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,9 +65,11 @@ public class UsbActivity extends AppCompatActivity {
         }
         // 打开设备，建立通信连接
         UsbSerialDriver driver = availableDrivers.get(0);
+        sPort = driver.getPorts().get(0);
         manager.requestPermission(driver.getDevice(), PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0));
        if(manager.hasPermission(driver.getDevice())){
-           connection = manager.openDevice(driver.getDevice());
+           //connection = manager.openDevice(driver.getDevice());
+           connection = manager.openDevice(sPort.getDriver().getDevice());
            test.append("获取了USB权限！！！");
        }
         if (connection == null) {
@@ -76,11 +79,11 @@ public class UsbActivity extends AppCompatActivity {
         }
 
         //打开端口，设置端口参数，读取数据
-        final UsbSerialPort port = driver.getPorts().get(0);
+       // final UsbSerialPort port = driver.getPorts().get(0);
         try {
-            port.open(connection);
+            sPort.open(connection);
             //四个参数分别是：波特率，数据位，停止位，校验位
-            port.setParameters(115200, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
+            sPort.setParameters(115200, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
 
             final byte buffer[] = new byte[16];
             read = new Thread() {
@@ -90,7 +93,7 @@ public class UsbActivity extends AppCompatActivity {
                     int numBytesRead = 0;
                     while (true) {
                         try {
-                            numBytesRead = port.read(buffer, 1000);
+                            numBytesRead = sPort.read(buffer, 1000);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -106,7 +109,7 @@ public class UsbActivity extends AppCompatActivity {
                     super.run();
                     while (true) {
                         try {
-                            port.write("Hello Rowsen".getBytes(), 1000);
+                            sPort.write("Hello Rowsen".getBytes(), 1000);
                             sleep(5000);
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -122,7 +125,7 @@ public class UsbActivity extends AppCompatActivity {
             e.printStackTrace();
         } finally {
             try {
-                port.close();
+                sPort.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
