@@ -16,30 +16,18 @@
         android:scrollbarFadeDuration="2000">
     </ListView>
 
-<TextView
-    android:id="@+id/receive"
-    android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:layout_weight="0"
-    android:scrollbars="vertical"
-    android:scrollbarStyle="insideOverlay"
-    android:padding="10dp"
-    android:fadeScrollbars="false"
-    android:scrollbarFadeDuration="2000"
-    android:hint="原始数据展示"
-    android:visibility="gone"/>
-<LinearLayout
+<ScrollView
+    android:id="@+id/scroll"
     android:layout_width="match_parent"
     android:layout_height="0dp"
     android:layout_weight="30">
     <com.rowsen.serial_bluetoothusb.AutoScrollTextView
-        android:id="@+id/scroll"
+        android:id="@+id/receive"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-
         android:text="原始数据展示"
         android:visibility="visible"/>
-</LinearLayout>
+</ScrollView>
 <Button
     android:id="@+id/stop"
     android:layout_width="match_parent"

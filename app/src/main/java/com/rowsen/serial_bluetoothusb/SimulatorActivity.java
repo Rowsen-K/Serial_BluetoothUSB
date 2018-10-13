@@ -12,8 +12,6 @@ import java.sql.SQLOutput;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import static java.lang.Thread.sleep;
-
 //此处应该实现模拟多种设备的语句,预置进去一些设备
 //当前先实现GPS和自编辑语句的发送
 
@@ -43,33 +41,34 @@ public class SimulatorActivity extends AppCompatActivity {
         GPS.setOnClickListener(new View.OnClickListener() {
             boolean flag = false;
             String s = MyApp.GPS_DATA;
+
             @Override
             public void onClick(View v) {
                 flag = !flag;
-               Thread sim = new Thread(){
-                   @Override
-                   public void run() {
-                       super.run();
-                       while (flag) {
-                           try {
-                               out.write(s.getBytes());
-                               out.flush();
-                               sleep(1000);
-                           } catch (IOException e) {
-                               e.printStackTrace();
-                               System.out.println("蓝牙数据写出失败!");
-                               Toast.makeText(SimulatorActivity.this, "蓝牙数据写出失败!", Toast.LENGTH_SHORT).show();
-                           } catch (InterruptedException e) {
-                               e.printStackTrace();
-                           }
-                       }
-                   }
-               } ;
-               if(flag) {
-                   Toast.makeText(SimulatorActivity.this,"GPS数据模拟开始!" ,Toast.LENGTH_SHORT ).show();
-                   sim.start();
-               }
-               else Toast.makeText(SimulatorActivity.this,"GPS数据模拟关闭!" , Toast.LENGTH_SHORT).show();
+                Thread sim = new Thread() {
+                    @Override
+                    public void run() {
+                        super.run();
+                        while (flag) {
+                            try {
+                                out.write(s.getBytes());
+                                out.flush();
+                                sleep(1000);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                System.out.println("蓝牙数据写出失败!");
+                                Toast.makeText(SimulatorActivity.this, "蓝牙数据写出失败!", Toast.LENGTH_SHORT).show();
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                };
+                if (flag) {
+                    Toast.makeText(SimulatorActivity.this, "GPS数据模拟开始!", Toast.LENGTH_SHORT).show();
+                    sim.start();
+                } else
+                    Toast.makeText(SimulatorActivity.this, "GPS数据模拟关闭!", Toast.LENGTH_SHORT).show();
             }
         });
         edit.setOnClickListener(new View.OnClickListener() {

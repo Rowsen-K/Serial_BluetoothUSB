@@ -46,7 +46,7 @@ public class BluetoothDeviceAdapter extends BaseAdapter {
         TextView mac = v.findViewById(R.id.mac);
         name.setText(i + "、" + "设备名:" + device.getName());
         state.setText("状态:已配对");
-        mac.setText("硬件MAC地址:"+device.getAddress());
+        mac.setText("硬件MAC地址:" + device.getAddress());
         return v;
     }
 }
