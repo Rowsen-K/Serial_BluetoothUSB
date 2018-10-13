@@ -19,14 +19,24 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </ScrollView>
-
+<LinearLayout
+    android:id="@+id/func"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="15"
+    android:orientation="horizontal">
     <Button
         android:id="@+id/read"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="15"
+        android:layout_height="match_parent"
         android:text="读取" />
-
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:popupBackground="@color/black"
+        android:visibility="gone"></Spinner>
+</LinearLayout>
     <LinearLayout
         android:id="@+id/send_select"
         android:layout_width="match_parent"
@@ -63,6 +73,12 @@
             android:id="@+id/write"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="写入" />
+            android:text="发送" />
+        <Button
+            android:id="@+id/exit"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="退出透传"
+            />
     </LinearLayout>
 </LinearLayout>

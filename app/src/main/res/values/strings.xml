@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Serial_Bluetooth&amp;USB</string>
+    <string name="baud">请选择波特率</string>
 </resources>

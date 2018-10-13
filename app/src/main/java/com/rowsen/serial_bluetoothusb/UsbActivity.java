@@ -7,10 +7,14 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
@@ -23,6 +27,10 @@ import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+//目前还未实现修改esp8266的串口波特率，实现比较简单，
+// 测试时可能会遇到找不到波特率不能通讯的情况，
+// 所以先完成其他部分的编写，最后来补全这一块
+
 public class UsbActivity extends AppCompatActivity {
     private static final String ACTION_USB_PERMISSION = "com.an.USB_PERMISSION";
     ScrollView scroll;
@@ -30,7 +38,10 @@ public class UsbActivity extends AppCompatActivity {
     LinearLayout send_manual;
     Button auto;
     Button manual;
+    Button exit;
     EditText sendcontent;
+    Spinner spinner;
+    String[] list = {"115200","4800","9600","38400","74880"};
     SerialInputOutputManager sio;
     SerialInputOutputManager.Listener lis;
     StringBuilder sb;
@@ -52,10 +63,18 @@ public class UsbActivity extends AppCompatActivity {
         test = findViewById(R.id.test);
         r = findViewById(R.id.read);
         w = findViewById(R.id.write);
+        spinner = findViewById(R.id.spinner);
         send_select = findViewById(R.id.send_select);
         send_manual = findViewById(R.id.manual_send);
         manual = findViewById(R.id.manual);
         auto = findViewById(R.id.auto);
+        exit = findViewById(R.id.exit);
+        exit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sio.writeAsync("+++".getBytes());
+            }
+        });
         sb = new StringBuilder();
         manual.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,7 +87,6 @@ public class UsbActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 auto.setEnabled(false);
-                if (mark) {
                     new Thread() {
                     @Override
                     public void run() {
@@ -97,21 +115,13 @@ public class UsbActivity extends AppCompatActivity {
                                public void run() {
                                    test.append("\n一键透传开启完毕");
                                    scroll.smoothScrollTo(0, test.getBottom());
-                                   auto.setText("退出透传");
-                                   auto.setEnabled(true);
+                                   send_select.setVisibility(View.GONE);
+                                   send_manual.setVisibility(View.VISIBLE);
                                }
                            });
-                           mark =false;
                        }
                     }
                 }.start();
-            }
-            else {
-                    auto.setEnabled(false);
-                    sio.writeAsync("+++".getBytes());
-                    auto.setText("一键透传");
-                    auto.setEnabled(true);
-                }
             }
         });
         scroll = findViewById(R.id.scroll);
@@ -124,6 +134,25 @@ public class UsbActivity extends AppCompatActivity {
                 sio.setListener(lis);
                 new Thread(sio).start();
                 r.setEnabled(false);
+                r.setVisibility(View.GONE);
+                spinner.setVisibility(View.VISIBLE);
+                spinner.setBackgroundColor(getResources().getColor(R.color.black));
+                ArrayAdapter adp = new ArrayAdapter<String>(getApplication(),android.R.layout.simple_spinner_item,list);
+                adp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinner.setAdapter(adp);
+            }
+        });
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                TextView tx = view.findViewById(android.R.id.text1);
+                System.out.println("spinner============="+tx.getText());
+                sio.writeAsync(("AT+UART_CUR="+tx.getText()+",8,1,0,0\r\n").getBytes());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
             }
         });
         w.setOnClickListener(new View.OnClickListener() {
