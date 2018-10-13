@@ -4,25 +4,65 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".UsbActivity"
     android:orientation="vertical"
-    android:weightSum="100">
-    <TextView
-        android:id="@+id/test"
+    android:weightSum="100"
+    tools:context=".UsbActivity">
+
+    <ScrollView
+        android:id="@+id/scroll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="70"/>
+        android:layout_weight="70">
+
+        <TextView
+            android:id="@+id/test"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </ScrollView>
+
     <Button
         android:id="@+id/read"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="15"
-        android:text="读取"/>
-    <Button
-        android:id="@+id/write"
+        android:text="读取" />
+
+    <LinearLayout
+        android:id="@+id/send_select"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="15"
-        android:text="写入"/>
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/manual"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="手动发送"/>
+        <Button
+            android:id="@+id/auto"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="一键透传"/>
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/manual_send"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="15"
+        android:visibility="gone">
 
+        <EditText
+            android:id="@+id/sendcontent"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/write"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="写入" />
+    </LinearLayout>
 </LinearLayout>

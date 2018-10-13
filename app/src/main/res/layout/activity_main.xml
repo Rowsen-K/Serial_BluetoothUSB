@@ -4,10 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:weightSum="2"
+    android:weightSum="3"
     android:orientation="vertical"
     tools:context=".MainActivity">
-
+<Button
+    android:id="@+id/set"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:text="串口设置"/>
    <Button
        android:id="@+id/bluetooth"
        android:layout_width="match_parent"

@@ -1,6 +1,7 @@
 package com.rowsen.serial_bluetoothusb;
 
 import android.app.Application;
+import android.content.SharedPreferences;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -41,10 +42,12 @@ public class MyApp extends Application {
     public static BluetoothConnect connect;
     public static File file;
     public static BufferedOutputStream out;
+    public  static SharedPreferences sp;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        sp = getSharedPreferences("SerialPortSet", MODE_PRIVATE);
         file = new File(getCacheDir(), "GGAtemp.txt");
         System.out.println("文件的保存路径:" + file.getAbsolutePath());
         try {

@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.sql.SQLOutput;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -82,7 +83,8 @@ public class SimulatorActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 try {
-                    out.write(edit.getText().toString().getBytes());
+                    out.write(data.getText().toString().getBytes("GB2312"));
+                    System.out.println("================="+data.getText());
                     out.flush();
                 } catch (IOException e) {
                     e.printStackTrace();
