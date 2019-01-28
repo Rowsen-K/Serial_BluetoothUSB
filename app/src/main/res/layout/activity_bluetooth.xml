@@ -15,7 +15,13 @@
         android:scrollbars="vertical"
         android:scrollbarFadeDuration="2000">
     </ListView>
-
+<TextView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="原始数据展示"
+    android:textSize="18sp"
+    android:textColor="@color/blue"
+    android:layout_margin="3dp"/>
 <ScrollView
     android:id="@+id/scroll"
     android:layout_width="match_parent"
@@ -25,7 +31,6 @@
         android:id="@+id/receive"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="原始数据展示"
         android:visibility="visible"/>
 </ScrollView>
 <Button

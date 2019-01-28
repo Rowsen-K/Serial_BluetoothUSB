@@ -92,19 +92,19 @@ public class BluetoothConnect extends Thread {
 
     }
 
-    public void read(Handler handler) throws IOException {
+    public void read(Handler handler,int what) throws IOException {
         byte[] buf = new byte[128];
         int n = 0;
-        write = MyApp.out;
+       // write = MyApp.out;
         while (readflag) {
             if (in != null) n = in.read(buf);
             if (n != -1 && n != 0) {
                 String s = new String(buf, 0, n);
                 //System.out.println("接收到的字符:" + s);
-                write.write(s.getBytes());
-                write.flush();
+                //write.write(s.getBytes());
+               // write.flush();
                 Message msg = new Message();
-                msg.what = 1;
+                msg.what = what;
                 msg.obj = s;
                 handler.sendMessage(msg);
             }

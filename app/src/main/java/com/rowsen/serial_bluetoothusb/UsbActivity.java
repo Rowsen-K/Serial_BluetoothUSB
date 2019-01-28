@@ -41,7 +41,7 @@ public class UsbActivity extends AppCompatActivity {
     Button exit;
     EditText sendcontent;
     Spinner spinner;
-    String[] list = {"115200","4800","9600","38400","74880"};
+    String[] list = {"请选择波特率","2400","4800","9600","38400","74880","115200"};
     SerialInputOutputManager sio;
     SerialInputOutputManager.Listener lis;
     StringBuilder sb;
@@ -146,7 +146,9 @@ public class UsbActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 TextView tx = view.findViewById(android.R.id.text1);
-                System.out.println("spinner============="+tx.getText());
+                String s = (String) tx.getText();
+                System.out.println("spinner============="+s);
+                if(s!=null&&s!=""&&s!="请选择波特率")
                 sio.writeAsync(("AT+UART_CUR="+tx.getText()+",8,1,0,0\r\n").getBytes());
             }
 

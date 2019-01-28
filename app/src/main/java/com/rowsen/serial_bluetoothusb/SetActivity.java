@@ -19,7 +19,7 @@ public class SetActivity extends AppCompatActivity {
     BaseExpandableListAdapter adp;
     Button confirm;
     String[] title = {"波特率", "数据位", "校验位", "停止位"};
-    String[][] setItem = {{"4800", "9600", "38400", "74880", "115200"}, {"7", "8"}, {"无校验(N)", "奇校验(ODD)", "偶校验(EVEN)"}, {"1", "2"}};
+    String[][] setItem = {{"2400", "4800", "9600", "38400", "74880", "115200"}, {"7", "8"}, {"无校验(N)", "奇校验(ODD)", "偶校验(EVEN)"}, {"1", "2"}};
     boolean flag = true;
 
     @Override
@@ -78,8 +78,8 @@ public class SetActivity extends AppCompatActivity {
                 if (temp == null)
                     set_title.setText(title[i]);
                 else {
-                    title[i]+=":" + temp;
-                    set_title.setText(title[i] );
+                    title[i] += ":" + temp;
+                    set_title.setText(title[i]);
                 }
                 set_title.setTextSize(36);
                 set_title.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
@@ -156,7 +156,11 @@ public class SetActivity extends AppCompatActivity {
                         ed.putString(sets[0].trim(), sets[1].trim());
                         if (ed.commit())
                             System.out.println("数据提交成功！" + MyApp.sp.getString(sets[0], null));
-                        else System.out.println("提交数据失败！");
+                        else {
+                            System.out.println("提交数据失败！");
+                            Toast.makeText(SetActivity.this, "数据提交失败！", Toast.LENGTH_SHORT).show();
+                            break;
+                        }
                         n++;
                     } else if (sets.length == 1) {
                         flag = false;
@@ -183,7 +187,6 @@ public class SetActivity extends AppCompatActivity {
                         break;
                 }
                 System.out.println(MyApp.sp.getAll());
-                label1:
                 if (flag) finish();
             }
         });

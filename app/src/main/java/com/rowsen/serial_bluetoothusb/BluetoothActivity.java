@@ -19,7 +19,7 @@ import java.util.Set;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class BluetoothActivity extends AppCompatActivity {
-  //  TextView receive;
+    //  TextView receive;
     Button analysis;
     Button stop;
     Button send;
@@ -36,13 +36,13 @@ public class BluetoothActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bluetooth);
-        //receive = findViewById(R.id.receive);
+        receive = findViewById(R.id.receive);
         analysis = findViewById(R.id.analysis);
         stop = findViewById(R.id.stop);
         send = findViewById(R.id.send);
         list = findViewById(R.id.list);
 
-        receive = findViewById(R.id.scroll);
+        // receive = findViewById(R.id.scroll);
         receive.setAutoSplitEnabled(true);
 
         stop.setOnClickListener(new View.OnClickListener() {
@@ -55,14 +55,14 @@ public class BluetoothActivity extends AppCompatActivity {
         analysis.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               // connect.readflag = false;
-                startActivity(new Intent(BluetoothActivity.this,AnalysisActivity.class));
+                 connect.readflag = false;
+                startActivity(new Intent(BluetoothActivity.this, AnalysisActivity.class));
             }
         });
         send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(BluetoothActivity.this,SimulatorActivity.class));
+                startActivity(new Intent(BluetoothActivity.this, SimulatorActivity.class));
             }
         });
         handler = new Handler() {
@@ -82,12 +82,12 @@ public class BluetoothActivity extends AppCompatActivity {
                             if (height > scale)
                                 receive.scrollTo(0, height - scale);
                             //receive.clearComposingText();
-                            receive.append(receive.autoSplitText(receive,(String) msg.obj));
+                            receive.append(receive.autoSplitText(receive, (String) msg.obj));
                         }
                         // scroll.appendText((String)msg.obj);
                         break;
                     case 2://读取时蓝牙连接断开
-                        TextView state = (TextView)msg.obj;
+                        TextView state = (TextView) msg.obj;
                         MyApp.completeFlag = false;
                         state.setText("已配对|" + "蓝牙已断开!");
                         state.setTextColor(getBaseContext().getResources().getColor(R.color.colorAccent));
@@ -101,38 +101,44 @@ public class BluetoothActivity extends AppCompatActivity {
             }
         };
         bla = BluetoothAdapter.getDefaultAdapter();
-        if (bla.isEnabled()) {
-            devices = bla.getBondedDevices();
-            bda = new BluetoothDeviceAdapter(this, devices);
-            list.setAdapter(bda);
+        if (bla == null) {
+            Toast.makeText(this, "该设备不支持蓝牙连接！", Toast.LENGTH_SHORT).show();
         } else {
-            Toast.makeText(this, "蓝牙正在开启请稍等!", Toast.LENGTH_SHORT);
-            bla.enable();
-            bla.startDiscovery();
-            finish();
+            if (bla.isEnabled()) {
+                devices = bla.getBondedDevices();
+                bda = new BluetoothDeviceAdapter(this, devices);
+                list.setAdapter(bda);
+            } else {
+                Toast.makeText(this, "蓝牙正在开启请稍等!", Toast.LENGTH_SHORT);
+                bla.enable();
+                bla.startDiscovery();
+                finish();
+            }
         }
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 BluetoothDevice device = bda.list[i];
-                connect = new BluetoothConnect(BluetoothActivity.this, view, handler, bla, device);
+                MyApp.connect = new BluetoothConnect(BluetoothActivity.this, view, handler, bla, device);
+                connect = MyApp.connect;
                 connect.start();
-                final TextView state= view.findViewById(R.id.state);
-                new Thread(){
+                final TextView state = view.findViewById(R.id.state);
+                new Thread() {
                     @Override
                     public void run() {
                         super.run();
-                        while(!MyApp.completeFlag){}
+                        while (!MyApp.completeFlag) {
+                        }
                         try {
-                            connect.read(handler);
+                            connect.read(handler,1);
                         } catch (IOException e) {
                             e.printStackTrace();
-                            if(connect.socket.isConnected())
-                                connect.close();
-                                Message msg = new Message();
-                                msg.what = 2;
-                                msg.obj = state;
-                                handler.sendMessage(msg);
+                          //  if (connect.socket.isConnected())
+                               // connect.close();
+                            Message msg = new Message();
+                            msg.what = 2;
+                            msg.obj = state;
+                            handler.sendMessage(msg);
                         }
                     }
                 }.start();
@@ -143,18 +149,17 @@ public class BluetoothActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (connect != null) connect.close();
+       // if (connect != null) connect.close();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if(!MyApp.completeFlag){
+        if (!MyApp.completeFlag) {
             stop.setEnabled(false);
             analysis.setEnabled(false);
             send.setEnabled(false);
-        }
-        else{
+        } else {
             stop.setEnabled(true);
             analysis.setEnabled(true);
             send.setEnabled(true);

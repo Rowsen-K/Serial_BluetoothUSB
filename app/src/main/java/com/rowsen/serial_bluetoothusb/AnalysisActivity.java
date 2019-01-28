@@ -2,15 +2,24 @@ package com.rowsen.serial_bluetoothusb;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import net.sf.marineapi.nmea.io.SentenceReader;
+import net.sf.marineapi.provider.PositionProvider;
+import net.sf.marineapi.provider.event.PositionEvent;
+import net.sf.marineapi.provider.event.PositionListener;
+import net.sf.marineapi.provider.event.ProviderListener;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,21 +28,31 @@ import androidx.appcompat.app.AppCompatActivity;
 //此处先实现一个GGA的解析
 public class AnalysisActivity extends AppCompatActivity {
     BluetoothConnect connect;
-    BufferedInputStream in;
+    InputStream in;
     Button gga;
+    Button get;
     TextView content;
     Handler handler;
     File file;
     RandomAccessFile read;
     boolean flag = false;
     long filelength;
-
+    SentenceReader reader;
+    PositionProvider pos;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_analysis);
         gga = findViewById(R.id.gga);
+        get = findViewById(R.id.get);
         content = findViewById(R.id.content);
+        handler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                super.handleMessage(msg);
+                content.append((String)msg.obj+"\n");
+            }
+        };
         if (MyApp.connect != null) {
             connect = MyApp.connect;
             in = connect.in;
@@ -41,62 +60,46 @@ public class AnalysisActivity extends AppCompatActivity {
             Toast.makeText(this, "请先建立蓝牙连接再进行数据模拟的操作!", Toast.LENGTH_SHORT).show();
             finish();
         }
-        file = MyApp.file;
-        try {
-            read = new RandomAccessFile(file, "r");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        filelength = file.length();
-        final Thread one = new Thread() {
+        reader = new SentenceReader(in);
+        get.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void run() {
-                super.run();
-                while (true) {
-                    long newlength = file.length();
-                    if (newlength > filelength) {
-                        byte[] buf = new byte[(int) (newlength - filelength)];
-                        try {
-                            read.seek(filelength);
-                            read.read(buf);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        String s = new String(buf);
-                        // System.out.println("这是解析时拿到的字符:" + s);
-                        int start = s.lastIndexOf("$GPGGA");
-                        if (start != -1) {
-                            int end = s.indexOf("\n", start);
-                            if (end != -1) s = s.substring(start, end);
-                            if (s.contains("*")) flag = true;
-                            //  System.out.println("=============flag:" + flag + "------------" + s);
-                        }
-                        if (flag) {
-                            final String[] result = s.split(",");
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    content.setText("时间:" + result[1] + "\n" + "纬度:" + result[2] + "\n" + "经度:" + result[4] + "\n");
-                                }
-                            });
-                            filelength = newlength;
-                            flag = false;
-                        }
-                    }
+            public void onClick(View view) {
+                MyApp.connect.readflag = true;
+                try {
+                    MyApp.connect.read(handler,4);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-        };
-
+        });
         gga.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                one.start();
+                pos = new PositionProvider(reader);
+                pos.addListener(new ProviderListener<PositionEvent>() {
+                    @Override
+                    public void providerUpdate(final PositionEvent positionEvent) {
+                        Log.e("数据：",positionEvent.toString());
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                              //  Toast.makeText(AnalysisActivity.this,"数据更新",Toast.LENGTH_SHORT).show();
+                                content.append("时间："+positionEvent.getDate()+"\n");
+                                content.append("位置："+positionEvent.getPosition()+"\n");
+                            }
+                        });
+
+
+                    }
+                });
+                reader.start();
                 gga.setEnabled(false);
                 new Thread() {
                     @Override
                     public void run() {
                         super.run();
-                        while (connect.readflag) {
+                        while (MyApp.connect.socket.isConnected()) {
                         }
                         runOnUiThread(new Runnable() {
                             @Override

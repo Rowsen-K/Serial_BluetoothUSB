@@ -4,7 +4,7 @@ android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.rowsen.serial_bluetoothusb"
-        minSdkVersion 19
+        minSdkVersion 24
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -26,4 +26,5 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.1.0-alpha3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-alpha3'
     implementation project(':usbSerialForAndroid')
+    implementation files('libs/marineapi-0.10.0.jar')
 }
