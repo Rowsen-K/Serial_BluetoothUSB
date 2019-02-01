@@ -48,14 +48,14 @@ public class BluetoothActivity extends AppCompatActivity {
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                connect.close();
+                MyApp.connect.close();
                 stop.setEnabled(false);
             }
         });
         analysis.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                 connect.readflag = false;
+                 MyApp.connect.readflag = false;
                 startActivity(new Intent(BluetoothActivity.this, AnalysisActivity.class));
             }
         });
@@ -74,7 +74,6 @@ public class BluetoothActivity extends AppCompatActivity {
                         Toast.makeText(BluetoothActivity.this, "请确认对方蓝牙串口已开启后,再次点击设备进行连接!", Toast.LENGTH_LONG).show();
                         break;
                     case 1:
-
                         synchronized (this) {
                             //添加完文本后需要滚动TextView到最后一行
                             int height = receive.getLineCount() * receive.getLineHeight();
@@ -97,6 +96,11 @@ public class BluetoothActivity extends AppCompatActivity {
                         analysis.setEnabled(true);
                         send.setEnabled(true);
                         break;
+                    case 4:
+                        devices = bla.getBondedDevices();
+                        bda = new BluetoothDeviceAdapter(BluetoothActivity.this, devices);
+                        list.setAdapter(bda);
+                        break;
                 }
             }
         };
@@ -105,14 +109,19 @@ public class BluetoothActivity extends AppCompatActivity {
             Toast.makeText(this, "该设备不支持蓝牙连接！", Toast.LENGTH_SHORT).show();
         } else {
             if (bla.isEnabled()) {
-                devices = bla.getBondedDevices();
-                bda = new BluetoothDeviceAdapter(this, devices);
-                list.setAdapter(bda);
+                handler.sendEmptyMessage(4);
             } else {
-                Toast.makeText(this, "蓝牙正在开启请稍等!", Toast.LENGTH_SHORT);
                 bla.enable();
                 bla.startDiscovery();
-                finish();
+                Toast.makeText(this, "蓝牙正在开启请稍后!", Toast.LENGTH_LONG).show();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        while(!bla.isEnabled()){
+                    }
+                  handler.sendEmptyMessage(4);
+                }
+                }).start();
             }
         }
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -120,8 +129,8 @@ public class BluetoothActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 BluetoothDevice device = bda.list[i];
                 MyApp.connect = new BluetoothConnect(BluetoothActivity.this, view, handler, bla, device);
-                connect = MyApp.connect;
-                connect.start();
+                //connect = MyApp.connect;
+                MyApp.connect.start();
                 final TextView state = view.findViewById(R.id.state);
                 new Thread() {
                     @Override
@@ -130,7 +139,7 @@ public class BluetoothActivity extends AppCompatActivity {
                         while (!MyApp.completeFlag) {
                         }
                         try {
-                            connect.read(handler,1);
+                            MyApp.connect.read(handler,1);
                         } catch (IOException e) {
                             e.printStackTrace();
                           //  if (connect.socket.isConnected())

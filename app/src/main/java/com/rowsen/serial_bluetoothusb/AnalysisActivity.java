@@ -12,12 +12,9 @@ import android.widget.Toast;
 import net.sf.marineapi.nmea.io.SentenceReader;
 import net.sf.marineapi.provider.PositionProvider;
 import net.sf.marineapi.provider.event.PositionEvent;
-import net.sf.marineapi.provider.event.PositionListener;
 import net.sf.marineapi.provider.event.ProviderListener;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -39,6 +36,7 @@ public class AnalysisActivity extends AppCompatActivity {
     long filelength;
     SentenceReader reader;
     PositionProvider pos;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,11 +44,14 @@ public class AnalysisActivity extends AppCompatActivity {
         gga = findViewById(R.id.gga);
         get = findViewById(R.id.get);
         content = findViewById(R.id.content);
-        handler = new Handler(){
+        handler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
-                content.append((String)msg.obj+"\n");
+                if (msg.what == 4) {
+                    Log.e("数据：",(String)msg.obj);
+                    content.append((String) msg.obj + "\n");
+                }
             }
         };
         if (MyApp.connect != null) {
@@ -65,12 +66,17 @@ public class AnalysisActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 MyApp.connect.readflag = true;
-                try {
-                    MyApp.connect.read(handler,4);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                MyApp.connect.read(handler, 4);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }).start();
                 }
-            }
         });
         gga.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -79,38 +85,36 @@ public class AnalysisActivity extends AppCompatActivity {
                 pos.addListener(new ProviderListener<PositionEvent>() {
                     @Override
                     public void providerUpdate(final PositionEvent positionEvent) {
-                        Log.e("数据：",positionEvent.toString());
+                        Log.e("数据：", positionEvent.toString());
 
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                              //  Toast.makeText(AnalysisActivity.this,"数据更新",Toast.LENGTH_SHORT).show();
-                                content.append("时间："+positionEvent.getDate()+"\n");
-                                content.append("位置："+positionEvent.getPosition()+"\n");
+                                //  Toast.makeText(AnalysisActivity.this,"数据更新",Toast.LENGTH_SHORT).show();
+                                content.append("时间：" + positionEvent.getDate() + "\n");
+                                content.append("位置：" + positionEvent.getPosition() + "\n");
                             }
                         });
-
-
                     }
                 });
                 reader.start();
                 gga.setEnabled(false);
-                new Thread() {
-                    @Override
-                    public void run() {
-                        super.run();
-                        while (MyApp.connect.socket.isConnected()) {
-                        }
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                content.append("蓝牙连接已断开！");
-                                Toast.makeText(AnalysisActivity.this, "蓝牙连接已断开！", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    }
-                }.start();
             }
         });
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                while (MyApp.connect.socket.isConnected()) {
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        content.append("蓝牙连接已断开！");
+                        Toast.makeText(AnalysisActivity.this, "蓝牙连接已断开！", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }.start();
     }
 }

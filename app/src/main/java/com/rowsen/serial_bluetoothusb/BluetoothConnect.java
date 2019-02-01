@@ -100,7 +100,7 @@ public class BluetoothConnect extends Thread {
             if (in != null) n = in.read(buf);
             if (n != -1 && n != 0) {
                 String s = new String(buf, 0, n);
-                //System.out.println("接收到的字符:" + s);
+                System.out.println("接收到的字符:" + s);
                 //write.write(s.getBytes());
                // write.flush();
                 Message msg = new Message();
